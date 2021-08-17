@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Adam():
+class Adam:
     def __init__(self, layerSizes, stepSize, bM, bV, epsilon):
         # initialize hyperparams
         self.layerSizes = layerSizes
