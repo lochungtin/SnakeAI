@@ -1,9 +1,11 @@
 import numpy as np
-import reader
+from reader import Reader
 import threading
 
 def main():
     # start screen capture
+    reader = Reader()
+
     readingThread = threading.Thread(target=reader.start)
     readingThread.start()
 
