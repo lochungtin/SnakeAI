@@ -2,23 +2,22 @@ import numpy as np
 
 
 class ReplayBuffer:
-    def __init__(self, size, minibatch_size):
+    def __init__(self, size, miniBatchSize):
         self.buffer = []
-        self.minibatch_size = minibatch_size
-        self.rand_generator = np.random.RandomState()
-        self.max_size = size
+        self.miniBatchSize = miniBatchSize
+        self.maxSize = size
 
     # append new state, remove oldest if full
-    def append(self, state, action, reward, terminal, next_state):
-        if len(self.buffer) == self.max_size:
+    def append(self, state, action, reward, terminal, nState):
+        if len(self.buffer) == self.maxSize:
             del self.buffer[0]
-        self.buffer.append([state, action, reward, terminal, next_state])
+        self.buffer.append([state, action, reward, terminal, nState])
 
     # get random sample
     def getSample(self):
-        idxs = self.rand_generator.choice(
+        idxs = np.random.RandomState().choice(
             np.arange(len(self.buffer)),
-            size=self.minibatch_size,
+            size=self.miniBatchSize,
         )
         return [self.buffer[idx] for idx in idxs]
 

@@ -10,11 +10,11 @@ from utils import Utils
 class Agent:
     def __init__(self, config):
         # init agent params
-        self.replay_buffer = ReplayBuffer(
+        self.replayBuffer = ReplayBuffer(
             config['rbConfig']['rbSize'],
             config['rbConfig']['batchSize'],
         )
-        self.num_replay = config['rbConfig']['replayUpdatePerStep']
+        self.replayCount = config['rbConfig']['replayUpdatePerStep']
 
         self.network = NeuralNetwork(
             config['nnConfig']['stateCount'],
@@ -29,7 +29,7 @@ class Agent:
             config['adamConfig']['epsilon'],
         )
 
-        self.num_actions = config['nnConfig']['actionCount']
+        self.actionCount = config['nnConfig']['actionCount']
         self.discount = config['gamma']
         self.tau = config['tau']
 
@@ -37,16 +37,16 @@ class Agent:
 
         self.util = Utils()
 
-        self.last_state = None
-        self.last_action = None
+        self.pState = None
+        self.pAction = None
 
-        self.sum_rewards = 0
-        self.episode_steps = 0
+        self.rSum = 0
+        self.epSteps = 0
 
     # choose action according to policy and softmax
     def policy(self, state):
         return self.rand_generator.choice(
-            a=self.num_actions,
+            a=self.actionCount,
             p=self.util.softmax(
                 self.network.getActionValues(
                     state
@@ -56,35 +56,35 @@ class Agent:
 
     # start episode
     def agent_start(self, state):
-        self.sum_rewards = 0
-        self.episode_steps = 0
-        self.last_state = np.array([state])
-        self.last_action = self.policy(self.last_state)
+        self.rSum = 0
+        self.epSteps = 0
+        self.pState = np.array([state])
+        self.pAction = self.policy(self.pState)
 
-        return self.last_action
+        return self.pAction
 
     # time step increment 
     def agent_step(self, reward, state):
-        self.sum_rewards += reward
-        self.episode_steps += 1
+        self.rSum += reward
+        self.epSteps += 1
 
         state = np.array([state])
 
         action = self.policy(state)
 
-        self.replay_buffer.append(
-            self.last_state,
-            self.last_action,
+        self.replayBuffer.append(
+            self.pState,
+            self.pAction,
             reward,
             False,
             state
         )
 
-        if self.replay_buffer.getSize() > self.replay_buffer.minibatch_size:
+        if self.replayBuffer.getSize() > self.replayBuffer.miniBatchSize:
             current_q = deepcopy(self.network)
-            for i in range(self.num_replay):
-                self.util.optimize_network(
-                    self.replay_buffer.getSample(),
+            for i in range(self.replayCount):
+                self.util.optimizeNN(
+                    self.replayBuffer.getSample(),
                     self.discount,
                     self.optimizer,
                     self.network,
@@ -92,31 +92,31 @@ class Agent:
                     self.tau
                 )
 
-        self.last_state = state
-        self.last_action = action
+        self.pState = state
+        self.pAction = action
 
         return action
 
     # end episode
     def agent_end(self, reward):
-        self.sum_rewards += reward
-        self.episode_steps += 1
+        self.rSum += reward
+        self.epSteps += 1
 
-        state = np.zeros_like(self.last_state)
+        state = np.zeros_like(self.pState)
 
-        self.replay_buffer.append(
-            self.last_state,
-            self.last_action,
+        self.replayBuffer.append(
+            self.pState,
+            self.pAction,
             reward,
             True,
             state
         )
 
-        if self.replay_buffer.getSize() > self.replay_buffer.minibatch_size:
+        if self.replayBuffer.getSize() > self.replayBuffer.miniBatchSize:
             current_q = deepcopy(self.network)
-            for i in range(self.num_replay):
-                self.util.optimize_network(
-                    self.replay_buffer.getSample(),
+            for i in range(self.replayCount):
+                self.util.optimizeNN(
+                    self.replayBuffer.getSample(),
                     self.discount,
                     self.optimizer,
                     self.network,

@@ -13,7 +13,7 @@ class Utils:
         return (exp_perferences / sum_of_exp_preferences.reshape((-1, 1))).squeeze()
 
     # get temporal difference error
-    def get_td_error(self, states, nState, actions, rewards, discount, terminals, network, curQ, tau):
+    def getTDError(self, states, nState, actions, rewards, discount, terminals, network, curQ, tau):
         q_next_mat = curQ.getActionValues(nState)
         probs_mat = self.softmax(q_next_mat, tau)
         v_next_vec = np.sum(q_next_mat * probs_mat, axis=1) * (1 - terminals)
@@ -26,7 +26,7 @@ class Utils:
         return target_vec - q_vec
 
     # optimize the neural network
-    def optimize_network(self, experiences, discount, optimizer, network, curQ, tau):
+    def optimizeNN(self, experiences, discount, optimizer, network, curQ, tau):
         states, actions, rewards, terminals, nState = map(
             list,
             zip(*experiences),
@@ -37,7 +37,7 @@ class Utils:
         terminals = np.array(terminals)
         batchSize = states.shape[0]
 
-        delta_vec = self.get_td_error(
+        delta_vec = self.getTDError(
             states,
             nState,
             actions,
@@ -51,10 +51,10 @@ class Utils:
 
         batch_indices = np.arange(batchSize)
 
-        delta_mat = np.zeros((batchSize, network.num_actions))
+        delta_mat = np.zeros((batchSize, network.actionCount))
         delta_mat[batch_indices, actions] = delta_vec
 
-        td_update = network.get_TD_update(states, delta_mat)
+        td_update = network.getTDUpdate(states, delta_mat)
 
         weights = optimizer.update_weights(network.get_weights(), td_update)
 
