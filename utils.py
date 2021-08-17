@@ -14,12 +14,12 @@ class Utils:
 
     # get temporal difference error
     def get_td_error(self, states, nState, actions, rewards, discount, terminals, network, curQ, tau):
-        q_next_mat = curQ.get_action_values(nState)
+        q_next_mat = curQ.getActionValues(nState)
         probs_mat = self.softmax(q_next_mat, tau)
         v_next_vec = np.sum(q_next_mat * probs_mat, axis=1) * (1 - terminals)
         target_vec = rewards + discount * v_next_vec
 
-        q_mat = network.get_action_values(states)
+        q_mat = network.getActionValues(states)
         batch_indices = np.arange(q_mat.shape[0])
         q_vec = q_mat[batch_indices, actions]
 

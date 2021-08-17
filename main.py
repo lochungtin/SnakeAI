@@ -1,11 +1,15 @@
+from pynput.keyboard import Key
 import numpy as np
 import threading
 import time
 
 from agent import Agent
-from neuralnet import NeuralNetwork
+from keyboard import Keyboard
 from reader import Reader
 
+
+# env vars
+orbPos = None
 reading = None
 
 # screen reader
@@ -35,19 +39,55 @@ agent = Agent({
     'tau': 0.001
 })
 
+# keyboard controller
+controller = Keyboard({
+    0: 'w',
+    1: 's',
+    2: 'a',
+    3: 'd',
+    4: Key.space,
+})
+
 
 def main():
     # variable binding
-    global agent, reading, readingThread
+    global agent, orbPos, reading, readingThread
 
     # start screen capture
     readingThread.start()
 
-    time.sleep(0.5)
+    # print ready up prompt
+    print('move your cursor to window')
+    time.sleep(1)
+    print('training starts in 3')
+    time.sleep(1)
+    print('2')
+    time.sleep(1)
+    print('1')
+
+    # start training
+    reading, orbPos, headPos, gameover = reader.getState()
+    agent.agent_start(reading)
     while True:
-        temp = reader.get_readings()
-        if not np.array_equal(reading, temp):
-            reading = temp
+        tempReading, tempOrbPos, headPos, gameover = reader.getState()
+        # reset if gameover
+        if gameover:
+            agent.agent_end(-10000)
+            controller.apply(4)
+            reading, orbPos, headPos, gameover = reader.getState()
+
+            agent.agent_start(reading)
+
+        # step controller
+        elif not np.array_equal(reading, tempReading):
+            reading = tempReading
+            reward = -1
+
+            if orbPos != tempOrbPos:
+                orbPos = tempOrbPos
+                reward = 20
+
+            agent.agent_step(reward, reading)
 
             print(reading)
 

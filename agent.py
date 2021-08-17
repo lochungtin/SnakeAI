@@ -48,7 +48,7 @@ class Agent:
         return self.rand_generator.choice(
             self.num_actions,
             p=self.util.softmax(
-                self.network.get_action_values(
+                self.network.getActionValues(
                     state
                 ), self.tau
             ).squeeze(),

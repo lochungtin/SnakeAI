@@ -35,6 +35,8 @@ DEBUG_PRINT_ROW = '+---+---+---+---+---+---+---+---+---+---+---+\n'
 class Reader:
     def __init__(self):
         self.reading = np.zeros((11, 11))
+        self.orbPos = None
+        self.headPos = None
         self.gameover = False
 
         self.printDebugD = False
@@ -63,12 +65,9 @@ class Reader:
 
         print(output)
 
-    # getters
-    def get_readings(self):
-        return np.copy(self.reading)
-
-    def get_gameover(self):
-        return self.gameover
+    # get state
+    def getState(self):
+        return np.copy(self.reading), self.orbPos, self.headPos, self.gameover
 
     # main
     def start(self):
@@ -98,13 +97,19 @@ class Reader:
                 )
 
                 # read screenshot pixels, update reading
-                for row in range(11):
-                    for col in range(11):
-                        self.reading[col][row] = COLOR_MAPPING[
+                for col in range(11):
+                    for row in range(11):
+                        encoding = COLOR_MAPPING[
                             img
-                            [CAPTURE_OFFSET['top'] + col * CAPTURE_GRID_STEP]
-                            [CAPTURE_OFFSET['left'] + row * CAPTURE_GRID_STEP]
+                            [CAPTURE_OFFSET['top'] + row * CAPTURE_GRID_STEP]
+                            [CAPTURE_OFFSET['left'] + col * CAPTURE_GRID_STEP]
                         ]
+                        self.reading[row][col] = encoding
+
+                        if encoding == 3:
+                            self.orbPos = (row, col)
+                        elif encoding == 2:
+                            self.headPos = (row, col)
 
                 # update gameover boolean
                 self.gameover = img[CAPTURE_GAMEOVER_PIXEL] == CAPTURE_GAMEOVER_LVALUE
