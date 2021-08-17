@@ -5,6 +5,7 @@ import threading
 
 reading = None
 
+
 def main():
     # variable binding
     global reading
@@ -22,8 +23,6 @@ def main():
             reading = temp
 
             print(reading)
-
-                
 
 if __name__ == "__main__":
     main()

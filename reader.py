@@ -4,6 +4,7 @@ import mss
 import mss.tools
 from PIL import Image
 
+
 # === environment constants ===
 MON_NUM = 2
 
@@ -30,8 +31,9 @@ COLOR_MAPPING = {
 # === debug contants
 DEBUG_PRINT_ROW = '+---+---+---+---+---+---+---+---+---+---+---+\n'
 
+
 class Reader:
-    def __init__(self):    
+    def __init__(self):
         self.reading = np.zeros((11, 11))
         self.gameover = False
 
@@ -45,7 +47,7 @@ class Reader:
 
         for row in range(11):
             printRow = '| '
-            for col in range (11):
+            for col in range(11):
                 cellValue = self.reading[row][col]
 
                 if cellValue == 0:
@@ -88,7 +90,8 @@ class Reader:
                 img = cv.cvtColor(
                     np.array(
                         Image.frombytes(
-                            'RGB', (screenshot.width, screenshot.height), screenshot.rgb
+                            'RGB', (screenshot.width,
+                                    screenshot.height), screenshot.rgb
                         )
                     ),
                     cv.COLOR_RGB2GRAY,

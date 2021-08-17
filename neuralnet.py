@@ -1,6 +1,7 @@
 import numpy as np
 from copy import deepcopy
 
+
 class NeuralNetwork:
     def __init__(self, stateCount, hiddenUnitCount, actionCount):
         self.stateCount = stateCount
@@ -40,11 +41,11 @@ class NeuralNetwork:
         return tensor
 
     # get Q value
-    def getActionValues(self, s):        
+    def getActionValues(self, s):
         W0, b0 = self.weights[0]['W'], self.weights[0]['b']
         psi = np.dot(s, W0) + b0
         x = np.maximum(psi, 0)
-        
+
         W1, b1 = self.weights[1]['W'], self.weights[1]['b']
         q_vals = np.dot(x, W1) + b1
 
@@ -54,21 +55,21 @@ class NeuralNetwork:
     def getTDUpdate(self, s, delta_mat):
         W0, b0 = self.weights[0]['W'], self.weights[0]['b']
         W1 = self.weights[1]['W']
-        
+
         psi = np.dot(s, W0) + b0
         x = np.maximum(psi, 0)
         dx = (psi > 0).astype(float)
 
         td_update = [dict() for i in range(len(self.weights))]
-         
+
         v = delta_mat
         td_update[1]['W'] = np.dot(x.T, v) * 1. / s.shape[0]
         td_update[1]['b'] = np.sum(v, axis=0, keepdims=True) * 1. / s.shape[0]
-        
+
         v = np.dot(v, W1.T) * dx
         td_update[0]['W'] = np.dot(s.T, v) * 1. / s.shape[0]
         td_update[0]['b'] = np.sum(v, axis=0, keepdims=True) * 1. / s.shape[0]
-                
+
         return td_update
 
     # get and set weights for updating

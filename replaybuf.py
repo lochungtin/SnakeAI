@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class ReplayBuffer:
     def __init__(self, size, minibatch_size):
         self.buffer = []
@@ -15,7 +16,10 @@ class ReplayBuffer:
 
     # get random sample
     def getSample(self):
-        idxs = self.rand_generator.choice(np.arange(len(self.buffer)), size=self.minibatch_size)
+        idxs = self.rand_generator.choice(
+            np.arange(len(self.buffer)),
+            size=self.minibatch_size,
+        )
         return [self.buffer[idx] for idx in idxs]
 
     # get buffer size
