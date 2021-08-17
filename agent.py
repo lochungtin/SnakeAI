@@ -29,16 +29,19 @@ class Agent:
 
         self.rand_generator = np.random.RandomState()
 
+        self.util = Utils()
+
         self.last_state = None
         self.last_action = None
 
         self.sum_rewards = 0
         self.episode_steps = 0
 
+    # choose action according to policy and softmax
     def policy(self, state):
         return self.rand_generator.choice(
             self.num_actions,
-            p=Utils.softmax(
+            p=self.util.softmax(
                 self.network.get_action_values(
                     state
                 ), self.tau
@@ -74,7 +77,7 @@ class Agent:
         if self.replay_buffer.size() > self.replay_buffer.minibatch_size:
             current_q = deepcopy(self.network)
             for i in range(self.num_replay):
-                Utils.optimize_network(
+                self.util.optimize_network(
                     self.replay_buffer.sample(),
                     self.discount,
                     self.optimizer,
@@ -106,7 +109,7 @@ class Agent:
         if self.replay_buffer.size() > self.replay_buffer.minibatch_size:
             current_q = deepcopy(self.network)
             for i in range(self.num_replay):
-                Utils.optimize_network(
+                self.util.optimize_network(
                     self.replay_buffer.sample(),
                     self.discount,
                     self.optimizer,

@@ -16,9 +16,8 @@ def main():
     readingThread = threading.Thread(target=reader.start)
     readingThread.start()
 
-    while False:
+    while True:
         temp = reader.get_readings()
-
         if not np.array_equal(reading, temp):
             reading = temp
 
