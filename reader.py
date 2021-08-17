@@ -62,7 +62,7 @@ class Reader:
 
     # getters
     def get_readings(self):
-        return self.reading
+        return np.copy(self.reading)
 
     def get_gameover(self):
         return self.gameover

@@ -2,7 +2,12 @@ import numpy as np
 from reader import Reader
 import threading
 
+reading = None
+
 def main():
+    # variable binding
+    global reading
+
     # start screen capture
     reader = Reader()
 
@@ -10,7 +15,14 @@ def main():
     readingThread.start()
 
     while True:
-        print(reader.get_readings(), reader.get_gameover())
+        temp = reader.get_readings()
+
+        if not np.array_equal(reading, temp):
+            reading = temp
+
+            print(reading)
+
+                
 
 if __name__ == "__main__":
     main()
