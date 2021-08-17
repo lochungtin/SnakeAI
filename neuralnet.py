@@ -1,6 +1,7 @@
 from copy import deepcopy
-
+import json
 import numpy as np
+import os
 
 
 class NeuralNetwork:
@@ -79,3 +80,41 @@ class NeuralNetwork:
 
     def setWeight(self, weights):
         self.weights = deepcopy(weights)
+
+    # save and load NN config
+    def save(self):
+        weights = deepcopy(self.weights)
+
+        for i in weights:
+            i['W'] = i['W'].tolist()
+            i['b'] = i['b'].tolist()
+
+        dictionary = {
+            'actionCount': self.actionCount,
+            'hiddenUnitCount': self.hiddenUnitCount,
+            'layerSize': self.layerSize,
+            'stateCount': self.stateCount,
+            'weights': weights
+        }
+
+        file = open('nnconfig.json', 'w')
+        json.dump(dictionary, file)
+
+        file.close()
+
+    def load(self):
+        file = open('nnconfig.json', 'r')
+        dictionary = file.read()
+
+        self.actionCount = dictionary['actionCount']
+        self.hiddenUnitCount = dictionary['hiddenUnitCount']
+        self.stateCount = dictionary['stateCount']
+        self.layerSize = dictionary['layerSize']
+        
+        for i in dictionary['weights']:
+            i['W'] = np.array(i['W'])
+            i['b'] = np.array(i['b'])
+
+        self.weights = dictionary['weights']
+
+        file.close()

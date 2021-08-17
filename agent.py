@@ -117,3 +117,6 @@ class Agent:
                     current_q,
                     self.tau
                 )
+
+    def saveNN(self):
+        self.network.save()
