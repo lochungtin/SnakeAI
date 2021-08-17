@@ -31,12 +31,13 @@ COLOR_MAPPING = {
 DEBUG_PRINT_ROW = '+---+---+---+---+---+---+---+---+---+---+---+\n'
 
 class Reader:
-    reading = np.zeros((11, 11))
-    gameover = False
+    def __init__(self):    
+        self.reading = np.zeros((11, 11))
+        self.gameover = False
 
-    printDebugD = False
-    printDebugS = False
-    showWindow = True
+        self.printDebugD = False
+        self.printDebugS = False
+        self.showWindow = True
 
     # debug
     def debug(self):

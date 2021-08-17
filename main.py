@@ -1,3 +1,4 @@
+from neuralnet import NeuralNetwork
 import numpy as np
 from reader import Reader
 import threading
@@ -14,7 +15,7 @@ def main():
     readingThread = threading.Thread(target=reader.start)
     readingThread.start()
 
-    while True:
+    while False:
         temp = reader.get_readings()
 
         if not np.array_equal(reading, temp):
