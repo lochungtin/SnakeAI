@@ -43,9 +43,9 @@ class NeuralNetwork:
         return tensor
 
     # get Q value
-    def getActionValues(self, s):
+    def getActionValues(self, state):
         W0, b0 = self.weights[0]['W'], self.weights[0]['b']
-        psi = np.dot(s, W0) + b0
+        psi = np.dot(state, W0) + b0
         x = np.maximum(psi, 0)
 
         W1, b1 = self.weights[1]['W'], self.weights[1]['b']

@@ -11,19 +11,25 @@ class Agent:
     def __init__(self, config):
         # init agent params
         self.replay_buffer = ReplayBuffer(
-            config['replay_buffer_size'],
-            config['minibatch_sz'],
-            config.get("seed"),
+            config['rbConfig']['rbSize'],
+            config['rbConfig']['batchSize'],
         )
-        self.num_replay = config['num_replay_updates_per_step']
+        self.num_replay = config['rbConfig']['replayUpdatePerStep']
 
-        self.network = NeuralNetwork(config['network_config'])
+        self.network = NeuralNetwork(
+            config['nnConfig']['stateCount'],
+            config['nnConfig']['hiddenUnitCount'],
+            config['nnConfig']['actionCount'],
+        )
         self.optimizer = Adam(
             self.network.layerSize,
-            config["optimizer_config"],
+            config['adamConfig']['stepSize'],
+            config['adamConfig']['betaM'],
+            config['adamConfig']['betaV'],
+            config['adamConfig']['epsilon'],
         )
 
-        self.num_actions = config['network_config']['num_actions']
+        self.num_actions = config['nnConfig']['actionCount']
         self.discount = config['gamma']
         self.tau = config['tau']
 
@@ -120,3 +126,6 @@ class Agent:
 
     def saveNN(self):
         self.network.save()
+
+    def loadNN(self):
+        self.network.load()
