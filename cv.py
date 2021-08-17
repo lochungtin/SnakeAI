@@ -35,17 +35,16 @@ printDebugS = False
 showWindow = True
 
 # === functions ===
-
-# debug functions
-
+# debug
 def debug():
     output = DEBUG_PRINT_ROW
+
     for row in range(11):
         printRow = '|'
         for col in range (11):
             cell = ' '
             cellValue = reading[row][col]
-            
+
             if cellValue == 0:
                 cell += '  |'
             elif cellValue == 1:
@@ -56,49 +55,54 @@ def debug():
                 cell += 'o |'
         
             printRow += cell
+
         output += (printRow + '\n' + DEBUG_PRINT_ROW)
 
     print(output)
 
+# main
+def main():
+    # capture screen, update reading
+    with mss.mss() as sct:
+        # get monitor info, configure capture
+        mon = sct.monitors[MON_NUM]
+        monitor = {
+            'height': CAPTURE_HEIGHT,
+            'left': int(mon['left'] + mon['width'] / 2 - CAPTURE_WIDTH / 2),
+            'mon': MON_NUM,
+            'top': int(mon['height'] / 2 - CAPTURE_HEIGHT / 2),
+            'width': CAPTURE_WIDTH,
+        }
 
-# capture screen, update reading
-with mss.mss() as sct:
-    # get monitor info, configure capture
-    mon = sct.monitors[MON_NUM]
-    monitor = {
-        'height': CAPTURE_HEIGHT,
-        'left': int(mon['left'] + mon['width'] / 2 - CAPTURE_WIDTH / 2),
-        'mon': MON_NUM,
-        'top': int(mon['height'] / 2 - CAPTURE_HEIGHT / 2),
-        'width': CAPTURE_WIDTH,
-    }
+        while True:
+            # take screenshot
+            screenshot = sct.grab(monitor)
+            img = cv.cvtColor(
+                np.array(
+                    Image.frombytes(
+                        'RGB', (screenshot.width, screenshot.height), screenshot.rgb
+                    )
+                ),
+                cv.COLOR_RGB2GRAY,
+            )
 
-    while True:
-        # take screenshot
-        screenshot = sct.grab(monitor)
-        img = cv.cvtColor(
-            np.array(
-                Image.frombytes(
-                    'RGB', (screenshot.width, screenshot.height), screenshot.rgb
-                )
-            ),
-            cv.COLOR_RGB2GRAY,
-        )
+            # read screenshot pixels, update reading
+            for row in range(11):
+                for col in range(11):
+                    reading[col][row] = COLOR_MAPPING[
+                        img
+                        [CAPTURE_OFFSET['top'] + col * CAPTURE_GRID_STEP]
+                        [CAPTURE_OFFSET['left'] + row * CAPTURE_GRID_STEP]
+                    ]
 
-        # read screenshot pixels, update reading
-        for row in range(11):
-            for col in range(11):
-                reading[col][row] = COLOR_MAPPING[
-                    img
-                    [CAPTURE_OFFSET['top'] + col * CAPTURE_GRID_STEP]
-                    [CAPTURE_OFFSET['left'] + row * CAPTURE_GRID_STEP]
-                ]
+            # debug viewing
+            printDebugD and debug()
+            printDebugS and print(reading)
+            showWindow and cv.imshow('', img)
 
-        # debug viewing
-        printDebugD and debug()
-        printDebugS and print(reading)
-        showWindow and cv.imshow('', img)
+            # break
+            if cv.waitKey(33) & 0xFF in (ord('q'), 27):
+                break
 
-        ## break
-        if cv.waitKey(33) & 0xFF in (ord('q'), 27):
-            break
+if __name__ == "__main__":
+    main()
