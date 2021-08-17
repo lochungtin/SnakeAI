@@ -55,7 +55,7 @@ class Agent:
         )
 
     # start episode
-    def agent_start(self, state):
+    def start(self, state):
         self.rSum = 0
         self.epSteps = 0
         self.pState = np.array([state])
@@ -64,7 +64,7 @@ class Agent:
         return self.pAction
 
     # time step increment 
-    def agent_step(self, reward, state):
+    def step(self, reward, state):
         self.rSum += reward
         self.epSteps += 1
 
@@ -98,7 +98,7 @@ class Agent:
         return action
 
     # end episode
-    def agent_end(self, reward):
+    def end(self, reward):
         self.rSum += reward
         self.epSteps += 1
 
