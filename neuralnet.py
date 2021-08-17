@@ -44,7 +44,7 @@ class NeuralNetwork:
 
     # get Q value
     def getActionValues(self, state):
-        layers = len(self.layerSize) - 2
+        layers = len(self.weights) - 1
         x = state
         for i in range(layers):
             w, b = self.weights[i]['W'], self.weights[i]['b']
@@ -58,26 +58,44 @@ class NeuralNetwork:
 
         return q_vals
 
-    # get temporal difference update
-    def getTDUpdate(self, s, delta_mat):
-        W0, b0 = self.weights[0]['W'], self.weights[0]['b']
-        W1 = self.weights[1]['W']
+    # get gradients
+    def getGradients(self, state):
+        layers = len(self.weights)
+        grads = [dict() for i in range(layers)]
 
-        psi = np.dot(s, W0) + b0
-        x = np.maximum(psi, 0)
-        dx = (psi > 0).astype(float)
+        x = np.copy(state)
+        for i in range(layers - 1):
+            nT = self.weights[i + 1]['W'].T
 
-        td_update = [dict() for i in range(len(self.weights))]
+            # update gradients
+            grads[i]['W'] = x.T * np.dot(
+                nT,
+                nT * (x > 0),
+            )
+            grads[i]['b'] = nT * (x > 0)
 
-        v = delta_mat
-        td_update[1]['W'] = np.dot(x.T, v) * 1. / s.shape[0]
-        td_update[1]['b'] = np.sum(v, axis=0, keepdims=True) * 1. / s.shape[0]
+            # calculate next input
+            x = np.maximum(
+                np.matmul(
+                    x,
+                    self.weights[i]['W'],
+                ) + self.weights[i]['b'], 0,
+            )
 
-        v = np.dot(v, W1.T) * dx
-        td_update[0]['W'] = np.dot(s.T, v) * 1. / s.shape[0]
-        td_update[0]['b'] = np.sum(v, axis=0, keepdims=True) * 1. / s.shape[0]
+        return grads
 
-        return td_update
+    # get TD error * gradient
+    def getTDUpdate(self, state, deltaMatrix):
+        layers = len(self.weights)
+        tdUpdate = [dict() for i in range(layers)]
+
+        grads = self.getGradients(state)
+
+        for i in range(layers):
+            tdUpdate[i]['W'] = deltaMatrix * grads[i]['W']
+            tdUpdate[i]['b'] = deltaMatrix * grads[i]['b']
+
+        return tdUpdate
 
     # get and set weights for updating
     def getWeights(self):
@@ -115,7 +133,7 @@ class NeuralNetwork:
         self.hiddenUnitCount = dictionary['hiddenUnitCount']
         self.stateCount = dictionary['stateCount']
         self.layerSize = dictionary['layerSize']
-        
+
         for i in dictionary['weights']:
             i['W'] = np.array(i['W'])
             i['b'] = np.array(i['b'])

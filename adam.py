@@ -24,26 +24,26 @@ class Adam:
             )
             self.v[i]["b"] = np.zeros((1, self.layerSizes[i + 1]))
 
-        self.beta_m_product = self.bM
-        self.beta_v_product = self.bV
+        self.betaMProd = self.bM
+        self.betaVProd = self.bV
 
     # update weights with the adam optimizer
-    def update_weights(self, weights, td_errors_times_gradients):
+    def update_weights(self, weights, tdErrXGrad):
         for i in range(len(weights)):
             for param in weights[i].keys():
                 self.m[i][param] = self.bM * self.m[i][param] + (
-                    1 - self.bM) * td_errors_times_gradients[i][param]
+                    1 - self.bM) * tdErrXGrad[i][param]
 
                 self.v[i][param] = self.bV * self.v[i][param] + (
-                    1 - self.bV) * td_errors_times_gradients[i][param] ** 2
+                    1 - self.bV) * tdErrXGrad[i][param] ** 2
 
-                m_hat = self.m[i][param] / (1 - self.beta_m_product)
-                v_hat = self.v[i][param] / (1 - self.beta_v_product)
+                mHat = self.m[i][param] / (1 - self.betaMProd)
+                vHat = self.v[i][param] / (1 - self.betaVProd)
 
                 weights[i][param] += self.stepSize * \
-                    m_hat / (np.sqrt(v_hat) + self.epsilon)
+                    mHat / (np.sqrt(vHat) + self.epsilon)
 
-        self.beta_m_product *= self.bM
-        self.beta_v_product *= self.bV
+        self.betaMProd *= self.bM
+        self.betaVProd *= self.bV
 
         return weights

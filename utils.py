@@ -4,26 +4,26 @@ import numpy as np
 class Utils:
     # softmax function
     def softmax(self, action_values, tau=1.0):
-        preferences = action_values / tau
-        max_preference = np.max(preferences, axis=1).reshape((-1, 1))
+        pref = action_values / tau
+        maxPref = np.max(pref, axis=1).reshape((-1, 1))
 
-        exp_perferences = np.exp(preferences - max_preference)
-        sum_of_exp_preferences = np.sum(exp_perferences, axis=1)
+        ePref = np.exp(pref - maxPref)
+        sumEPref = np.sum(ePref, axis=1)
 
-        return (exp_perferences / sum_of_exp_preferences.reshape((-1, 1))).squeeze()
+        return (ePref / sumEPref.reshape((-1, 1))).squeeze()
 
     # get temporal difference error
     def getTDError(self, states, nState, actions, rewards, discount, terminals, network, curQ, tau):
-        q_next_mat = curQ.getActionValues(nState)
-        probs_mat = self.softmax(q_next_mat, tau)
-        v_next_vec = np.sum(q_next_mat * probs_mat, axis=1) * (1 - terminals)
-        target_vec = rewards + discount * v_next_vec
+        qNMatrix = curQ.getActionValues(nState)
+        probsMatrix = self.softmax(qNMatrix, tau)
+        vNVector = np.sum(qNMatrix * probsMatrix, axis=1) * (1 - terminals)
+        targetVector = rewards + discount * vNVector
 
-        q_mat = network.getActionValues(states)
-        batch_indices = np.arange(q_mat.shape[0])
-        q_vec = q_mat[batch_indices, actions]
+        qMatrix = network.getActionValues(states)
+        batchIndxs = np.arange(qMatrix.shape[0])
+        qVector = qMatrix[batchIndxs, actions]
 
-        return target_vec - q_vec
+        return targetVector - qVector
 
     # optimize the neural network
     def optimizeNN(self, experiences, discount, optimizer, network, curQ, tau):
@@ -37,7 +37,7 @@ class Utils:
         terminals = np.array(terminals)
         batchSize = states.shape[0]
 
-        delta_vec = self.getTDError(
+        deltaVector = self.getTDError(
             states,
             nState,
             actions,
@@ -49,13 +49,13 @@ class Utils:
             tau,
         )
 
-        batch_indices = np.arange(batchSize)
+        batchIndxs = np.arange(batchSize)
 
-        delta_mat = np.zeros((batchSize, network.actionCount))
-        delta_mat[batch_indices, actions] = delta_vec
+        deltaMatrix = np.zeros((batchSize, network.actionCount))
+        deltaMatrix[batchIndxs][actions] = deltaVector
 
-        td_update = network.getTDUpdate(states, delta_mat)
+        tdUpdate = network.getTDUpdate(states, deltaMatrix)
 
-        weights = optimizer.update_weights(network.get_weights(), td_update)
+        weights = optimizer.update_weights(network.get_weights(), tdUpdate)
 
         network.set_weights(weights)

@@ -66,8 +66,10 @@ def main():
     print('1')
 
     # start training
+    controller.apply(4)
     reading, orbPos, headPos, gameover = reader.getState()
     agent.start(np.array(reading).flatten())
+    
     while True:
         tempReading, tempOrbPos, headPos, gameover = reader.getState()
         # reset if gameover
