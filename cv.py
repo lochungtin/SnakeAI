@@ -13,8 +13,8 @@ CAPTURE_HEIGHT = 480
 CAPTURE_GRID_STEP = 40
 
 CAPTURE_OFFSET = {
-    "left": 20,
-    "top": 60,
+    'left': 20,
+    'top': 60,
 }
 
 COLOR_MAPPING = {
@@ -24,19 +24,53 @@ COLOR_MAPPING = {
     112: 3,  # orb
 }
 
+# === debug contants
+DEBUG_PRINT_ROW = '+---+---+---+---+---+---+---+---+---+---+---+\n'
+
 # === variables ===
 reading = np.zeros((11, 11))
+
+printDebugD = False
+printDebugS = False
+showWindow = True
+
+# === functions ===
+
+# debug functions
+
+def debug():
+    output = DEBUG_PRINT_ROW
+    for row in range(11):
+        printRow = '|'
+        for col in range (11):
+            cell = ' '
+            cellValue = reading[row][col]
+            
+            if cellValue == 0:
+                cell += '  |'
+            elif cellValue == 1:
+                cell += 'x |'
+            elif cellValue == 2:
+                cell += '* |'
+            else:
+                cell += 'o |'
+        
+            printRow += cell
+        output += (printRow + '\n' + DEBUG_PRINT_ROW)
+
+    print(output)
+
 
 # capture screen, update reading
 with mss.mss() as sct:
     # get monitor info, configure capture
     mon = sct.monitors[MON_NUM]
     monitor = {
-        "height": CAPTURE_HEIGHT,
-        "left": int(mon["left"] + mon["width"] / 2 - CAPTURE_WIDTH / 2),
-        "mon": MON_NUM,
-        "top": int(mon["height"] / 2 - CAPTURE_HEIGHT / 2),
-        "width": CAPTURE_WIDTH,
+        'height': CAPTURE_HEIGHT,
+        'left': int(mon['left'] + mon['width'] / 2 - CAPTURE_WIDTH / 2),
+        'mon': MON_NUM,
+        'top': int(mon['height'] / 2 - CAPTURE_HEIGHT / 2),
+        'width': CAPTURE_WIDTH,
     }
 
     while True:
@@ -45,7 +79,7 @@ with mss.mss() as sct:
         img = cv.cvtColor(
             np.array(
                 Image.frombytes(
-                    "RGB", (screenshot.width, screenshot.height), screenshot.rgb
+                    'RGB', (screenshot.width, screenshot.height), screenshot.rgb
                 )
             ),
             cv.COLOR_RGB2GRAY,
@@ -54,17 +88,17 @@ with mss.mss() as sct:
         # read screenshot pixels, update reading
         for row in range(11):
             for col in range(11):
-
                 reading[col][row] = COLOR_MAPPING[
                     img
-                    [CAPTURE_OFFSET["top"] + col * CAPTURE_GRID_STEP]
-                    [CAPTURE_OFFSET["left"] + row * CAPTURE_GRID_STEP]
+                    [CAPTURE_OFFSET['top'] + col * CAPTURE_GRID_STEP]
+                    [CAPTURE_OFFSET['left'] + row * CAPTURE_GRID_STEP]
                 ]
 
         # debug viewing
-        print(reading)
-        cv.imshow("", img)
+        printDebugD and debug()
+        printDebugS and print(reading)
+        showWindow and cv.imshow('', img)
 
         ## break
-        if cv.waitKey(33) & 0xFF in (ord("q"), 27):
+        if cv.waitKey(33) & 0xFF in (ord('q'), 27):
             break
