@@ -17,6 +17,9 @@ CAPTURE_OFFSET = {
     'top': 60,
 }
 
+CAPTURE_GAMEOVER_PIXEL = (5, 173)
+CAPTURE_GAMEOVER_LVALUE = 116
+
 COLOR_MAPPING = {
     48: 0,  # base
     170: 1,  # body
@@ -29,6 +32,7 @@ DEBUG_PRINT_ROW = '+---+---+---+---+---+---+---+---+---+---+---+\n'
 
 # === variables ===
 reading = np.zeros((11, 11))
+gameover = np.False_
 
 printDebugD = False
 printDebugS = False
@@ -60,8 +64,20 @@ def debug():
 
     print(output)
 
+# getters
+def get_readings():
+    global reading
+    return reading
+
+def get_gameover():
+    global gameover
+    return gameover
+
 # main
-def main():
+def start():
+    # bind global variables
+    global reading, gameover
+
     # capture screen, update reading
     with mss.mss() as sct:
         # get monitor info, configure capture
@@ -95,6 +111,9 @@ def main():
                         [CAPTURE_OFFSET['left'] + row * CAPTURE_GRID_STEP]
                     ]
 
+            # update gameover boolean
+            gameover = img[CAPTURE_GAMEOVER_PIXEL] == CAPTURE_GAMEOVER_LVALUE
+
             # debug viewing
             printDebugD and debug()
             printDebugS and print(reading)
@@ -103,6 +122,3 @@ def main():
             # break
             if cv.waitKey(33) & 0xFF in (ord('q'), 27):
                 break
-
-if __name__ == "__main__":
-    main()
