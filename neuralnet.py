@@ -44,12 +44,17 @@ class NeuralNetwork:
 
     # get Q value
     def getActionValues(self, state):
-        W0, b0 = self.weights[0]['W'], self.weights[0]['b']
-        psi = np.dot(state, W0) + b0
-        x = np.maximum(psi, 0)
+        layers = len(self.layerSize) - 2
+        x = state
+        for i in range(layers):
+            w, b = self.weights[i]['W'], self.weights[i]['b']
+            psi = np.dot(x, w) + b
 
-        W1, b1 = self.weights[1]['W'], self.weights[1]['b']
-        q_vals = np.dot(x, W1) + b1
+            # relu
+            x = np.maximum(psi, 0)
+
+        w, b = self.weights[layers]['W'], self.weights[layers]['b']
+        q_vals = np.dot(x, w) + b
 
         return q_vals
 

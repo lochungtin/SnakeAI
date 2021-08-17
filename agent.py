@@ -46,7 +46,7 @@ class Agent:
     # choose action according to policy and softmax
     def policy(self, state):
         return self.rand_generator.choice(
-            self.num_actions,
+            a=self.num_actions,
             p=self.util.softmax(
                 self.network.getActionValues(
                     state
@@ -80,11 +80,11 @@ class Agent:
             state
         )
 
-        if self.replay_buffer.size() > self.replay_buffer.minibatch_size:
+        if self.replay_buffer.getSize() > self.replay_buffer.minibatch_size:
             current_q = deepcopy(self.network)
             for i in range(self.num_replay):
                 self.util.optimize_network(
-                    self.replay_buffer.sample(),
+                    self.replay_buffer.getSample(),
                     self.discount,
                     self.optimizer,
                     self.network,
@@ -112,11 +112,11 @@ class Agent:
             state
         )
 
-        if self.replay_buffer.size() > self.replay_buffer.minibatch_size:
+        if self.replay_buffer.getSize() > self.replay_buffer.minibatch_size:
             current_q = deepcopy(self.network)
             for i in range(self.num_replay):
                 self.util.optimize_network(
-                    self.replay_buffer.sample(),
+                    self.replay_buffer.getSample(),
                     self.discount,
                     self.optimizer,
                     self.network,

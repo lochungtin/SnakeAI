@@ -67,7 +67,7 @@ def main():
 
     # start training
     reading, orbPos, headPos, gameover = reader.getState()
-    agent.agent_start(reading)
+    agent.agent_start(np.array(reading).flatten())
     while True:
         tempReading, tempOrbPos, headPos, gameover = reader.getState()
         # reset if gameover
@@ -76,7 +76,7 @@ def main():
             controller.apply(4)
             reading, orbPos, headPos, gameover = reader.getState()
 
-            agent.agent_start(reading)
+            agent.agent_start(np.array(reading).flatten())
 
         # step controller
         elif not np.array_equal(reading, tempReading):
@@ -87,7 +87,8 @@ def main():
                 orbPos = tempOrbPos
                 reward = 20
 
-            agent.agent_step(reward, reading)
+            action = agent.agent_step(reward, np.array(reading).flatten())
+            controller.apply(action)
 
             print(reading)
 
