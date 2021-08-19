@@ -49,10 +49,12 @@ class Utils:
             tau,
         )
 
+        print(deltaVector, deltaVector.shape)
+
         batchIndxs = np.arange(batchSize)
 
         deltaMatrix = np.zeros((batchSize, network.actionCount))
-        deltaMatrix[batchIndxs][actions] = deltaVector
+        deltaMatrix[batchIndxs, actions] = deltaVector
 
         tdUpdate = network.getTDUpdate(states, deltaMatrix)
 

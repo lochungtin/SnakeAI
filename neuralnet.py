@@ -58,7 +58,7 @@ class NeuralNetwork:
 
         return q_vals
 
-    # get gradients
+    # get gradients !!!
     def getGradients(self, state):
         layers = len(self.weights)
         grads = [dict() for i in range(layers)]
@@ -74,9 +74,9 @@ class NeuralNetwork:
             )
             grads[i]['b'] = nT * (x > 0)
 
-            # calculate next input
+            # calculate next values
             x = np.maximum(
-                np.matmul(
+                np.dot(
                     x,
                     self.weights[i]['W'],
                 ) + self.weights[i]['b'], 0,
@@ -85,7 +85,7 @@ class NeuralNetwork:
         return grads
 
     # get TD error * gradient
-    def getTDUpdate(self, state, deltaMatrix):
+    def getTDUpdate(self, state , deltaMatrix):
         layers = len(self.weights)
         tdUpdate = [dict() for i in range(layers)]
 
