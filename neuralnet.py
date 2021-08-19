@@ -58,50 +58,42 @@ class NeuralNetwork:
 
         return q_vals
 
-    # get gradients !!!
-    def getGradients(self, state):
-        layers = len(self.weights)
-        grads = [dict() for i in range(layers)]
-
-        x = np.copy(state)
-        for i in range(layers - 1):
-            nT = self.weights[i + 1]['W'].T
-
-            # update gradients
-            grads[i]['W'] = x.T * np.dot(
-                nT,
-                nT * (x > 0),
-            )
-            grads[i]['b'] = nT * (x > 0)
-
-            # calculate next values
-            x = np.maximum(
-                np.dot(
-                    x,
-                    self.weights[i]['W'],
-                ) + self.weights[i]['b'], 0,
-            )
-
-        return grads
-
     # get TD error * gradient
-    def getTDUpdate(self, state , deltaMatrix):
+    def getTDUpdate(self, states , deltaMatrix):
         layers = len(self.weights)
+        bS = states.shape[0]
         tdUpdate = [dict() for i in range(layers)]
 
-        grads = self.getGradients(state)
+        inputs = [states]
+        dxS = []
 
         for i in range(layers):
-            tdUpdate[i]['W'] = deltaMatrix * grads[i]['W']
-            tdUpdate[i]['b'] = deltaMatrix * grads[i]['b']
+            w, b = self.weights[i]['W'], self.weights[i]['b']
+            psi = np.dot(inputs[i], w) + b
 
+            # x
+            inputs.append(np.maximum(psi, 0))
+            # dx
+            dxS.append((np.dot(inputs[i], w) + b > 0).astype(float))       
+
+        vS = [None for i in range(layers)]
+        vS[layers - 1] = deltaMatrix
+        for i in range(layers - 2, -1, -1):
+            # v
+            print(i)
+            vS[i] = np.dot(vS[i + 1], self.weights[i + 1]['W'].T) * dxS[i]
+
+        for i in range(layers):
+            tdUpdate[i]['W'] = np.dot(inputs[i].T, vS[i]) * bS
+            tdUpdate[i]['b'] = np.sum(vS[i], axis=0, keepdims=True) / bS
+            
         return tdUpdate
 
     # get and set weights for updating
     def getWeights(self):
         return deepcopy(self.weights)
 
-    def setWeight(self, weights):
+    def setWeights(self, weights):
         self.weights = deepcopy(weights)
 
     # save and load NN config

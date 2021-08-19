@@ -28,7 +28,7 @@ class Adam:
         self.betaVProd = self.bV
 
     # update weights with the adam optimizer
-    def update_weights(self, weights, tdErrXGrad):
+    def updateWeights(self, weights, tdErrXGrad):
         for i in range(len(weights)):
             for param in weights[i].keys():
                 self.m[i][param] = self.bM * self.m[i][param] + (

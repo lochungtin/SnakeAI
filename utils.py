@@ -49,15 +49,16 @@ class Utils:
             tau,
         )
 
-        print(deltaVector, deltaVector.shape)
-
         batchIndxs = np.arange(batchSize)
 
         deltaMatrix = np.zeros((batchSize, network.actionCount))
         deltaMatrix[batchIndxs, actions] = deltaVector
+ 
+        print(deltaVector, deltaVector.shape)
+        print(actions, deltaMatrix)
 
         tdUpdate = network.getTDUpdate(states, deltaMatrix)
 
-        weights = optimizer.update_weights(network.get_weights(), tdUpdate)
+        weights = optimizer.updateWeights(network.getWeights(), tdUpdate)
 
-        network.set_weights(weights)
+        network.setWeights(weights)
