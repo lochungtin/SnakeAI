@@ -53,13 +53,12 @@ def main():
     # variable binding
     global agent, orbPos, reading, readingThread
 
-    # start screen capture
     readingThread.start()
 
     # print ready up prompt
     print('move your cursor to window')
     time.sleep(1)
-    print('training starts in 3')
+    print('training starts in\n3')
     time.sleep(1)
     print('2')
     time.sleep(1)
@@ -69,12 +68,13 @@ def main():
     controller.apply(4)
     reading, orbPos, headPos, gameover = reader.getState()
     agent.start(np.array(reading).flatten())
-    
+
     while True:
         tempReading, tempOrbPos, headPos, gameover = reader.getState()
         # reset if gameover
         if gameover:
             agent.end(-10000)
+
             controller.apply(4)
             reading, orbPos, headPos, gameover = reader.getState()
 

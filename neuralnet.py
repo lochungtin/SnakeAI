@@ -80,7 +80,6 @@ class NeuralNetwork:
         vS[layers - 1] = deltaMatrix
         for i in range(layers - 2, -1, -1):
             # v
-            print(i)
             vS[i] = np.dot(vS[i + 1], self.weights[i + 1]['W'].T) * dxS[i]
 
         for i in range(layers):

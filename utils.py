@@ -53,9 +53,6 @@ class Utils:
 
         deltaMatrix = np.zeros((batchSize, network.actionCount))
         deltaMatrix[batchIndxs, actions] = deltaVector
- 
-        print(deltaVector, deltaVector.shape)
-        print(actions, deltaMatrix)
 
         tdUpdate = network.getTDUpdate(states, deltaMatrix)
 
