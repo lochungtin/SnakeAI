@@ -9,13 +9,16 @@ from reader import Reader
 
 
 # env vars
-orbPos = None
-reading = None
+orbDist = None
 
 # screen reader
 reader = Reader()
+
 reader.showWindow = False
 reader.printDebug = False
+
+reader.selectMonitor(2)
+reader.calibrate()
 readingThread = threading.Thread(target=reader.start)
 
 # agent
@@ -24,10 +27,10 @@ agent = Agent({
         'stepSize': 1e-3,
         'betaM': 0.9,
         'betaV': 0.999,
-        'epsilon': 1e-8
+        'epsilon': 0.001
     },
     'nnConfig': {
-        'stateCount': 14,
+        'stateCount': 12,
         'hiddenUnitCount': [128, 64, 16],
         'actionCount': 4,
     },
@@ -36,7 +39,7 @@ agent = Agent({
         'batchSize': 8,
         'replayUpdatePerStep': 4,
     },
-    'gamma': 0.99,
+    'gamma': 0.95,
     'tau': 0.001
 })
 
@@ -67,13 +70,13 @@ def main():
 
     # start training
     controller.apply(4)
-    reading, orbPos, headPos, gameover = reader.getState()
-    agent.start(np.array(reading).flatten())
+    state, orbDist, newOrb, gameover = reader.getState()
+    agent.start(state)
 
     eps = 0
 
     while True:
-        tempReading, tempOrbPos, headPos, gameover = reader.getState()
+        tempState, newOrbDist, newOrb, gameover = reader.getState()
         # reset if gameover
         if gameover:
             agent.end(-100)
@@ -83,20 +86,25 @@ def main():
             time.sleep(0.5)
             controller.apply(4)
             time.sleep(0.1)
-            reading, orbPos, headPos, gameover = reader.getState()
+            state, orbDist, newOrb, gameover = reader.getState()
 
-            agent.start(np.array(reading).flatten())
+            agent.start(state)
 
         # step controller
-        elif not np.array_equal(reading, tempReading):
-            reading = tempReading
-            reward = 1
+        elif not np.array_equal(state, tempState) or orbDist != newOrbDist:
+            state = tempState
+            reward = -1
 
-            if orbPos != tempOrbPos:
-                orbPos = tempOrbPos
+            if newOrb:
                 reward = 10
+            elif orbDist > newOrbDist:
+                reward = 1
 
-            action = agent.step(reward, np.array(reading).flatten())
+            orbDist = newOrbDist
+
+            print(state, reward)
+
+            action = agent.step(reward, state)
             controller.apply(action)
 
 

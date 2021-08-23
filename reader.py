@@ -74,18 +74,14 @@ class Reader:
             # has obstacle right
             int(snakeX == (self.gridDim - 1)
                 or self.reading[snakeX + 1][snakeY] == BODY_INDX),
-            # manhattan distance to orb
-            abs(orbX - snakeX) + abs(orbY - snakeY),
-            # positions
-            orbX,
-            orbY,
-            snakeX,
-            snakeY,
             # snake direction
-            self.direction,
+            int(self.direction == 0),
+            int(self.direction == 1),
+            int(self.direction == 2),
+            int(self.direction == 3),
         ]
 
-        return state, self.gameover, self.newOrb
+        return state, abs(orbX - snakeX) + abs(orbY - snakeY), self.newOrb, self.gameover
 
     # select monitor
     # must call when using dual monitors
