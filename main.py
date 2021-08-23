@@ -15,6 +15,7 @@ reading = None
 # screen reader
 reader = Reader()
 reader.showWindow = False
+reader.printDebug = False
 readingThread = threading.Thread(target=reader.start)
 
 # agent
@@ -26,8 +27,8 @@ agent = Agent({
         'epsilon': 1e-8
     },
     'nnConfig': {
-        'stateCount': 121,
-        'hiddenUnitCount': [256, 128, 64, 16],
+        'stateCount': 14,
+        'hiddenUnitCount': [128, 64, 16],
         'actionCount': 4,
     },
     'rbConfig': {
@@ -69,13 +70,19 @@ def main():
     reading, orbPos, headPos, gameover = reader.getState()
     agent.start(np.array(reading).flatten())
 
+    eps = 0
+
     while True:
         tempReading, tempOrbPos, headPos, gameover = reader.getState()
         # reset if gameover
         if gameover:
-            agent.end(-10000)
+            agent.end(-100)
+            print('Eps: {} | reward: {}'.format(eps, agent.rSum))
+            eps += 1
 
+            time.sleep(0.5)
             controller.apply(4)
+            time.sleep(0.1)
             reading, orbPos, headPos, gameover = reader.getState()
 
             agent.start(np.array(reading).flatten())
@@ -83,16 +90,14 @@ def main():
         # step controller
         elif not np.array_equal(reading, tempReading):
             reading = tempReading
-            reward = -1
+            reward = 1
 
             if orbPos != tempOrbPos:
                 orbPos = tempOrbPos
-                reward = 20
+                reward = 10
 
             action = agent.step(reward, np.array(reading).flatten())
             controller.apply(action)
-
-            print(reading)
 
 
 if __name__ == "__main__":

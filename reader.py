@@ -3,89 +3,167 @@ import cv2 as cv
 import mss
 import mss.tools
 from PIL import Image
+from numpy.core.fromnumeric import shape
 
 
 # === environment constants ===
-MON_NUM = 2
-
 CAPTURE_WIDTH = 440
-CAPTURE_HEIGHT = 480
+CAPTURE_HEIGHT = 470
 
 CAPTURE_GRID_STEP = 40
 
 CAPTURE_OFFSET = {
     'left': 20,
-    'top': 60,
+    'top': 42,
 }
 
-CAPTURE_GAMEOVER_PIXEL = (5, 173)
-CAPTURE_GAMEOVER_LVALUE = 116
+CAPTURE_DIRECTION_PIXELS = [(5, 190), (5, 210), (5, 230), (5, 250)]
+CAPTURE_DIRECTION_LVALUE = 170
+
+CAPTURE_GAMEOVER_PIXEL = (5, 410)
+CAPTURE_GAMEOVER_LVALUE = 170
+
+CAPTURE_NEW_ORB_PIXEL = (5, 430)
+CAPTURE_NEW_ORB_LVALUE = 112
 
 COLOR_MAPPING = {
-    48: 0,  # base
-    170: 1,  # body
-    118: 2,  # head
-    112: 3,  # orb
+    48: (BASE_INDX := 0),   # base
+    170: (BODY_INDX := 1),  # body
+    118: (HEAD_INDX := 2),  # head
+    112: (ORB_INDX := 3),   # orb
 }
-
-# === debug contants
-DEBUG_PRINT_ROW = '+---+---+---+---+---+---+---+---+---+---+---+\n'
+MAX_GRID_DIM = 11
 
 
 class Reader:
     def __init__(self):
-        self.reading = np.zeros((11, 11))
+        self.monNum = 0
+
+        self.captureConfig = None
+        self.gridDim = 11
+
+        self.reading = None
+        self.direction = 0
         self.orbPos = None
         self.headPos = None
+
         self.gameover = False
+        self.newOrb = False
 
-        self.printDebugD = False
-        self.printDebugS = False
+        self.printDebug = False
         self.showWindow = True
-
-    # debug
-    def debug(self):
-        output = DEBUG_PRINT_ROW
-
-        for row in range(11):
-            printRow = '| '
-            for col in range(11):
-                cellValue = self.reading[row][col]
-
-                if cellValue == 0:
-                    printRow += '  | '
-                elif cellValue == 1:
-                    printRow += 'x | '
-                elif cellValue == 2:
-                    printRow += '* | '
-                else:
-                    printRow += 'o | '
-
-            output += printRow + '\n' + DEBUG_PRINT_ROW
-
-        print(output)
 
     # get state
     def getState(self):
-        return np.copy(self.reading), self.orbPos, self.headPos, self.gameover
+        orbX, orbY = self.orbPos
+        snakeX, snakeY = self.headPos
+
+        state = [
+            int(orbY < snakeY),  # is orb up
+            int(orbY > snakeY),  # is orb down
+            int(orbX < snakeX),  # is orb left
+            int(orbX > snakeY),  # is orb right
+            # has obstacle up
+            int(snakeY == 0 or self.reading[snakeX][snakeY - 1] == BODY_INDX),
+            # has obstacle down
+            int(snakeY == (self.gridDim - 1)
+                or self.reading[snakeX][snakeY + 1] == BODY_INDX),
+            # has obstacle left
+            int(snakeX == 0 or self.reading[snakeX - 1]
+                [snakeY] == BODY_INDX),
+            # has obstacle right
+            int(snakeX == (self.gridDim - 1)
+                or self.reading[snakeX + 1][snakeY] == BODY_INDX),
+            # manhattan distance to orb
+            abs(orbX - snakeX) + abs(orbY - snakeY),
+            # positions
+            orbX,
+            orbY,
+            snakeX,
+            snakeY,
+            # snake direction
+            self.direction,
+        ]
+
+        return state, self.gameover, self.newOrb
+
+    # select monitor
+    # must call when using dual monitors
+    def selectMonitor(self, monNum):
+        self.monNum = monNum
+
+    # find grid position and dim
+    def calibrate(self):
+        with mss.mss() as sct:
+            mon = sct.monitors[self.monNum]
+
+            fullCapDim = {
+                'height': mon['height'],
+                'left': mon['left'],
+                'mon': self.monNum,
+                'top': mon['top'],
+                'width': mon['width'],
+            }
+
+            # find position circle
+            screenshot = sct.grab(fullCapDim)
+            img = np.array(
+                Image.frombytes(
+                    'RGB', (screenshot.width,
+                            screenshot.height), screenshot.rgb
+                )
+            )
+
+            found = False
+            x, y = 0, 0
+            for i in range(mon['height']):
+                for j in range(mon['width']):
+                    if (img[i][j] == (162, 252, 225)).all():
+                        x, y = j, i + 5
+                        found = True
+                        break
+                if found:
+                    break
+
+            self.captureConfig = {
+                'height': CAPTURE_HEIGHT,
+                'left': mon['left'] + x - 9,
+                'mon': self.monNum,
+                'top': mon['top'] + y - 5,
+                'width': CAPTURE_WIDTH,
+            }
+
+            # read grid dimension
+            screenshot = sct.grab(self.captureConfig)
+            img = cv.cvtColor(
+                np.array(
+                    Image.frombytes(
+                        'RGB', (screenshot.width,
+                                screenshot.height), screenshot.rgb
+                    )
+                ),
+                cv.COLOR_RGB2GRAY,
+            )
+
+            count = 0
+            for col in range(11):
+                for row in range(11):
+                    val = img[CAPTURE_OFFSET['top'] + row *
+                              CAPTURE_GRID_STEP][CAPTURE_OFFSET['left'] + col * CAPTURE_GRID_STEP]
+
+                    if np.average(val) != 30:
+                        count += 1
+
+            self.gridDim = int(np.sqrt(count))
+            self.reading = np.zeros((self.gridDim, self.gridDim))
 
     # main
     def start(self):
         # capture screen, update reading
         with mss.mss() as sct:
-            # get monitor info, configure capture
-            mon = sct.monitors[MON_NUM]
-            monitor = {
-                'height': CAPTURE_HEIGHT,
-                'left': int(mon['left'] + mon['width'] / 2 - CAPTURE_WIDTH / 2),
-                'mon': MON_NUM,
-                'top': int(mon['height'] / 2 - CAPTURE_HEIGHT / 2),
-                'width': CAPTURE_WIDTH,
-            }
-
             while True:
                 # take screenshot
-                screenshot = sct.grab(monitor)
+                screenshot = sct.grab(self.captureConfig)
                 img = cv.cvtColor(
                     np.array(
                         Image.frombytes(
@@ -97,12 +175,15 @@ class Reader:
                 )
 
                 # read screenshot pixels, update reading
-                for col in range(11):
-                    for row in range(11):
+                pxlInc = int(2 - (self.gridDim - 7) / 2)
+                for col in range(self.gridDim):
+                    for row in range(self.gridDim):
                         encoding = COLOR_MAPPING[
                             img
-                            [CAPTURE_OFFSET['top'] + row * CAPTURE_GRID_STEP]
-                            [CAPTURE_OFFSET['left'] + col * CAPTURE_GRID_STEP]
+                            [CAPTURE_OFFSET['top'] +
+                                (row + pxlInc) * CAPTURE_GRID_STEP]
+                            [CAPTURE_OFFSET['left'] +
+                                (col + pxlInc) * CAPTURE_GRID_STEP]
                         ]
                         self.reading[row][col] = encoding
 
@@ -114,9 +195,16 @@ class Reader:
                 # update gameover boolean
                 self.gameover = img[CAPTURE_GAMEOVER_PIXEL] == CAPTURE_GAMEOVER_LVALUE
 
+                # update new orb boolean
+                self.newOrb = img[CAPTURE_NEW_ORB_PIXEL] == CAPTURE_NEW_ORB_LVALUE
+
+                # update direction value
+                for index, pos in enumerate(CAPTURE_DIRECTION_PIXELS):
+                    if img[pos] == CAPTURE_DIRECTION_LVALUE:
+                        self.direction = index
+
                 # debug viewing
-                self.printDebugD and self.debug()
-                self.printDebugS and print(self.reading)
+                self.printDebug and print(self.reading)
                 self.showWindow and cv.imshow('', img)
 
                 # break
