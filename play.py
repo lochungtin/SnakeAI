@@ -53,10 +53,14 @@ def main():
     controller.apply(4)
     state, orbDist, newOrb, gameover = reader.getState()
 
-    while True:
+    plays = 0
+    tScore = 0
+    while plays < 20:
         tempState, newOrbDist, newOrb, gameover = reader.getState()
         # reset if gameover
         if gameover:
+            plays += 1            
+
             time.sleep(0.5)
             controller.apply(4)
             time.sleep(0.1)
@@ -67,11 +71,13 @@ def main():
             state = tempState
             orbDist = newOrbDist
 
-
+            if newOrb:
+                tScore += 1
 
             action = player.getAction(state)
             controller.apply(action)
 
+    print('avg score in 20 plays: {}'.format(tScore / 20))
 
 if __name__ == "__main__":
     main()
