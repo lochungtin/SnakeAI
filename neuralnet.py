@@ -111,7 +111,7 @@ class NeuralNetwork:
             'weights': weights
         }
 
-        fileName = './out/' + datetime.now().strftime('%d:%m:%Y:%H:%M:%S_') + 'ep' + str(epCount) + '.json';
+        fileName = './out/nnconf_' + datetime.now().strftime('%d:%m:%Y:%H:%M:%S_') + 'ep' + str(epCount) + '.json';
 
         file = open(fileName, 'w')
         json.dump(dictionary, file)

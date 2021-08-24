@@ -83,7 +83,7 @@ def main():
             print('Eps: {} | reward: {}'.format(eps, agent.rSum))
             eps += 1
 
-            if eps % 2 == 0:
+            if eps % 250 == 0:
                 agent.saveNN(eps);
 
             time.sleep(0.5)
