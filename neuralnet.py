@@ -1,7 +1,7 @@
 from copy import deepcopy
+from datetime import datetime
 import json
 import numpy as np
-import os
 
 
 class NeuralNetwork:
@@ -96,7 +96,7 @@ class NeuralNetwork:
         self.weights = deepcopy(weights)
 
     # save and load NN config
-    def save(self):
+    def save(self, epCount):
         weights = deepcopy(self.weights)
 
         for i in weights:
@@ -111,7 +111,9 @@ class NeuralNetwork:
             'weights': weights
         }
 
-        file = open('nnconfig.json', 'w')
+        fileName = './out/' + datetime.now().strftime('%d:%m:%Y:%H:%M:%S_') + 'ep' + str(epCount) + '.json';
+
+        file = open(fileName, 'w')
         json.dump(dictionary, file)
 
         file.close()

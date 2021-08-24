@@ -124,8 +124,8 @@ class Agent:
                     self.tau
                 )
 
-    def saveNN(self):
-        self.network.save()
+    def saveNN(self, epCount):
+        self.network.save(epCount)
 
     def loadNN(self):
         self.network.load()
