@@ -17,7 +17,7 @@ reader = Reader()
 reader.showWindow = False
 reader.printDebug = False
 
-reader.selectMonitor(2)
+reader.selectMonitor(1)
 reader.calibrate()
 readingThread = threading.Thread(target=reader.start)
 
