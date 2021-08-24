@@ -3,9 +3,9 @@ import numpy as np
 import threading
 import time
 
-from agent import Agent
-from keyboard import Keyboard
-from reader import Reader
+from utils.agent import Agent
+from utils.keyboard import Keyboard
+from utils.reader import Reader
 
 
 # env vars
