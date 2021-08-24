@@ -105,8 +105,6 @@ def main():
 
             orbDist = newOrbDist
 
-            print(state, reward)
-
             action = agent.step(reward, state)
             controller.apply(action)
 
