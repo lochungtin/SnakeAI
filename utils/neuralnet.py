@@ -118,9 +118,9 @@ class NeuralNetwork:
 
         file.close()
 
-    def load(self):
-        file = open('nnconfig.json', 'r')
-        dictionary = file.read()
+    def load(self, filename):
+        file = open(filename, 'r')
+        dictionary = json.loads(file.read())
 
         self.actionCount = dictionary['actionCount']
         self.hiddenUnitCount = dictionary['hiddenUnitCount']
