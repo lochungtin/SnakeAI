@@ -67,8 +67,3 @@ In the first 1k epochs, there is noticiable improvement from the agent. But afte
 Some of the limitations are that the agent is not able avoid making the snake curl up into a ball and collide with its own body, which is expected in some sense. As the input does not contain additional information regarding the body of the snake and the entire environment, the agent will not be able to learn the consequences and actions that lead to such a situation.
 
 The gif above shows the average performance of the agent. The agent is able to score an average of 22.5 points in a single game (20 game sample size).
-
-# Next Steps
-
-1. Try out different NN configurations and inputs to see what is able to work around the current limitations.
-2. Code a version of snake that could be trained without the use of OpenCV, so training can take place in the background without the need of simulating key presses
