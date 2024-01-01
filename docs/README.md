@@ -1,4 +1,4 @@
-# Snake AI
+# Snake AI [(Github)](https://github.com/lochungtin/SnakeAI)
 
 Neural Expect Sarsa Reinforcement Learning Agent for [Snake](https://github.com/lochungtin/snake)
 
@@ -34,21 +34,21 @@ Before training, the program has to configure the OpenCV reading to read specifi
 
 The input is a 1D array of size 12, each input is a boolean of either 0 or 1, which represents the following
 
-- Relative **position of orb** and snake head
-  1. is the orb **above** the snake head
-  2. is the orb **below** the snake head
-  3. is the orb **left** of the snake head
-  4. is the orb **right** of the snake head
-- **Obstacle** detection
-  1. is there an obstacle **above** the snake head
-  2. is there an obstacle **below** the snake head
-  3. is there an obstacle **left** of the snake head
-  4. is there an obstacle **right** of the snake head
-- **Movement**
-  1. is the direction of the snake **up**
-  2. is the direction of the snake **down**
-  3. is the direction of the snake **left**
-  4. is the direction of the snake **right**
+-   Relative **position of orb** and snake head
+    1. is the orb **above** the snake head
+    2. is the orb **below** the snake head
+    3. is the orb **left** of the snake head
+    4. is the orb **right** of the snake head
+-   **Obstacle** detection
+    1. is there an obstacle **above** the snake head
+    2. is there an obstacle **below** the snake head
+    3. is there an obstacle **left** of the snake head
+    4. is there an obstacle **right** of the snake head
+-   **Movement**
+    1. is the direction of the snake **up**
+    2. is the direction of the snake **down**
+    3. is the direction of the snake **left**
+    4. is the direction of the snake **right**
 
 ### Output
 
